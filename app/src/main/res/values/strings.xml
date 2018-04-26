@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Geziyorum</string>
+    <string name="title_activity_home">Home</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="appName">GEZİYORUM</string>
+    <string name="user_name">Username</string>
+    <string name="password">Password</string>
+    <string name="login">LOGIN</string>
+    <string name="remember_me">Remember Me</string>
+    <string name="more_info">More Info</string>
+    <string name="register">REGISTER</string>
+    <string name="title_activity_travel">Map</string>
+    <string name="forgot_your_password"><u>Forgot Your Password?</u></string>
+</resources>
