@@ -7,7 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import com.example.recluse.geziyorum.models.TripModel;
+
 
 import java.util.ArrayList;
 
@@ -40,9 +41,9 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         name = holder.trip_name;
         info = holder.trip_info;
 
-        id.setText(Integer.toString(tripItem.getId()));
-        name.setText(tripItem.getName());
-        info.setText(tripItem.getInfo());
+        id.setText(Integer.toString(tripItem.getTrip_id()));
+        name.setText(tripItem.getTrip_name());
+        info.setText(tripItem.getAbout());
 
 
     }

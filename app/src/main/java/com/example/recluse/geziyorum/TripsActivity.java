@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.example.recluse.geziyorum.models.TripModel;
+
 import java.util.ArrayList;
 
 public class TripsActivity extends AppCompatActivity {
@@ -18,13 +20,6 @@ public class TripsActivity extends AppCompatActivity {
 
         this.tripsRecyclerView = findViewById(R.id.tripsRecyclerView);
 
-        tripList.add(new TripModel(1,"trip1", "info1"));
-        tripList.add(new TripModel(2,"trip2", "info2"));
-        tripList.add(new TripModel(3,"trip2", "info2"));
-        tripList.add(new TripModel(4,"trip1", "info1"));
-        tripList.add(new TripModel(5,"trip2", "info2"));
-        tripList.add(new TripModel(6,"trip2", "info2"));
-        tripList.add(new TripModel(7,"trip2", "info2"));
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         RecyclerView.LayoutManager recLayoutManager = layoutManager;
