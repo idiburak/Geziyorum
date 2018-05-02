@@ -22,6 +22,9 @@ public class TripModel {
         this.trip_name = trip_name;
         this.about = about;
         this.created_at = created_at;
+        this.total_distance = 0;
+        this.total_time = 0;
+        this.average_speed = 0;
     }
 
     public int getTrip_id() {

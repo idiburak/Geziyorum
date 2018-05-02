@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Debug;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,12 @@ import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import com.example.recluse.geziyorum.db.helper.sqlite.TripsDbHelper;
+import com.example.recluse.geziyorum.models.TripModel;
+
+import java.sql.Date;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     private CardView cardTravel, cardGallery, cardProfile, cardSettings, cardLogout;
@@ -25,6 +32,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        TripsDbHelper myDb = new TripsDbHelper(this);
+        myDb.getNextTripId(1);
+       /*
+        TripModel trip = new TripModel(1,1,"trip1","about1", new Date(Calendar.getInstance().getTime().getTime()));
+
+
+        boolean asd = myDb.insertTrip(trip);
+        String result;
+        if(asd){
+            result = "yep";
+        }else{
+            result = "no";
+        }
+        Log.d("deb", result);
+*/
         if(!runtime_permissions())
             Toast.makeText(this,"GPS is required for this application!",Toast.LENGTH_SHORT);
 
