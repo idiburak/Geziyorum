@@ -14,12 +14,12 @@ public class UserModel {
     private String name_surname;
     private String location;
     private String bio;
-    private String created_at;
+    private Date created_at;
     private String photo_path;
     private String remember_token;
     private Date birthdate;
 
-    public UserModel(int user_id, String username, String email, String password, String name_surname, String location, String bio, String created_at, String photo_path, Date birthdate) {
+    public UserModel(int user_id, String username, String email, String password, String name_surname, String location, String bio, String photo_path,  Date created_at, Date birthdate) {
         this.user_id = user_id;
         this.username = username;
         this.email = email;
@@ -35,6 +35,8 @@ public class UserModel {
     public int getUser_id() {
         return user_id;
     }
+
+    //region Getters&Setters
 
     public void setUser_id(int user_id) {
         this.user_id = user_id;
@@ -88,11 +90,11 @@ public class UserModel {
         this.bio = bio;
     }
 
-    public String getCreated_at() {
+    public Date getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
 
@@ -119,4 +121,6 @@ public class UserModel {
     public void setBirthdate(Date birthdate) {
         this.birthdate = birthdate;
     }
+
+    //endregion
 }

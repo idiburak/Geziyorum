@@ -1,6 +1,7 @@
 package com.example.recluse.geziyorum.models;
 
 import java.sql.Date;
+import java.util.Calendar;
 
 /**
  * Created by Recluse on 1.05.2018.
@@ -16,16 +17,18 @@ public class TripModel {
     private double total_time;
     private Date created_at;
 
-    public TripModel(int trip_id, int user_id, String trip_name, String about, Date created_at) {
+    public TripModel(int trip_id, int user_id, String trip_name, String about) {
         this.trip_id = trip_id;
         this.user_id = user_id;
         this.trip_name = trip_name;
         this.about = about;
-        this.created_at = created_at;
+        this.created_at = new Date(Calendar.getInstance().getTime().getTime());
         this.total_distance = 0;
         this.total_time = 0;
         this.average_speed = 0;
     }
+
+    //region Getters&Setters
 
     public int getTrip_id() {
         return trip_id;
@@ -90,4 +93,6 @@ public class TripModel {
     public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
+
+    //endregion
 }

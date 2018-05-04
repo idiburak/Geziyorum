@@ -1,6 +1,7 @@
 package com.example.recluse.geziyorum.models;
 
 import java.sql.Date;
+import java.util.Calendar;
 
 /**
  * Created by Recluse on 1.05.2018.
@@ -14,14 +15,16 @@ public class LocationModel {
     private double longitude;
     private double latitude;
 
-    public LocationModel(int location_id, int trip_id, int user_id, Date created_at, double longitude, double latitude) {
+    public LocationModel(int location_id, int trip_id, int user_id, double longitude, double latitude) {
         this.location_id = location_id;
         this.trip_id = trip_id;
         this.user_id = user_id;
-        this.created_at = created_at;
+        this.created_at = new Date(Calendar.getInstance().getTime().getTime());
         this.longitude = longitude;
         this.latitude = latitude;
     }
+
+    //region Getters&Setters
 
     public int getLocation_id() {
         return location_id;
@@ -70,4 +73,6 @@ public class LocationModel {
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
+
+    //endregion
 }
