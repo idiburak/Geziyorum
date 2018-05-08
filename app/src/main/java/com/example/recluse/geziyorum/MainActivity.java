@@ -18,8 +18,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.recluse.geziyorum.db.helper.LocalDbHelper;
-import com.example.recluse.geziyorum.db.helper.sqlite.LocationsDbHelper;
-import com.example.recluse.geziyorum.db.helper.sqlite.TripsDbHelper;
 import com.example.recluse.geziyorum.models.LocationModel;
 import com.example.recluse.geziyorum.models.TripModel;
 import com.example.recluse.geziyorum.models.UserModel;
