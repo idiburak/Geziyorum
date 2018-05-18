@@ -2,7 +2,6 @@ package com.example.recluse.geziyorum.db.helper;
 
 import com.example.recluse.geziyorum.db.bycrypt.BCrypt;
 import java.sql.*;
-import javax.sql.*;
 
 public class RemoteDbHelper {
 
@@ -14,7 +13,6 @@ public class RemoteDbHelper {
     private final String PASS = "qlkICJUwxhSTE2PY";
 
     private Connection conn = null;
-    private Statement stmt = null;
 
     public RemoteDbHelper() {
         try {
@@ -22,34 +20,34 @@ public class RemoteDbHelper {
             Class.forName("com.mysql.jdbc.Driver");
 
             //STEP 3: Open a connection
-            System.out.println("Connecting to database...");
+            //System.out.println("Connecting to database...");
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
         } catch (Exception e) {
             //Handle errors for Class.forName
+            System.out.println("hobaaaaa");
             e.printStackTrace();
         }
     }
 
-    public boolean checkPassword() {
+    public boolean checkPassword(String usernameOrEmail, String password) {
 
         try {
-            //STEP 4: Execute a query
-            System.out.println("Creating statement...");
-            stmt = conn.createStatement();
-            String sql;
-            sql = "SELECT password FROM users" +
-                    " WHERE email = 'cemaltaskiran@gmail.com'";
-            ResultSet rs = stmt.executeQuery(sql);
+            PreparedStatement ps = conn.prepareStatement("SELECT password FROM users WHERE username = ? OR email = ?");
+            ps.setString(1, usernameOrEmail);
+            ps.setString(2, usernameOrEmail);
 
-            while (rs.next()) {
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
                 //Retrieve by column name
-                String password = rs.getString("password");
-                return  BCrypt.checkpw("secrett", password);
+                String pass = rs.getString("password");
+                return  BCrypt.checkpw(password, pass);
 
             }
             rs.close();
         } catch (Exception e) {
             //Handle errors for Class.forName
+            System.out.println("-----------------------------------------------------------------------");
             e.printStackTrace();
             return false;
         }

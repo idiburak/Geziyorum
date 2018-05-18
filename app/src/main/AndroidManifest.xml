@@ -57,7 +57,8 @@
                 android:value="com.example.recluse.geziyorum.MainActivity" />
         </activity>
         <activity android:name=".TripsActivity" />
-        <activity android:name=".ProfileActivity"></activity>
+        <activity android:name=".ProfileActivity" />
+        <activity android:name=".TestActivity"></activity>
     </application>
 
 </manifest>
