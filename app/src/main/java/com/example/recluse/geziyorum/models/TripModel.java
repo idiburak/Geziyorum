@@ -8,34 +8,40 @@ import java.util.Calendar;
  */
 
 public class TripModel {
-    private int trip_id;
+    private int id;
     private int user_id;
-    private String trip_name;
+    private String name;
     private String about;
     private double total_distance;
-    private double average_speed;
     private double total_time;
+    private double average_speed;
     private Date created_at;
+    private int server_id;
 
-    public TripModel(int trip_id, int user_id, String trip_name, String about) {
-        this.trip_id = trip_id;
+    public TripModel(int id, int user_id, String name, String about, double total_distance, double total_time, double average_speed, Date created_at, int server_id) {
+        this.id = id;
         this.user_id = user_id;
-        this.trip_name = trip_name;
+        this.name = name;
         this.about = about;
-        this.created_at = new Date(Calendar.getInstance().getTime().getTime());
-        this.total_distance = 0;
-        this.total_time = 0;
-        this.average_speed = 0;
+        this.total_distance = total_distance;
+        this.total_time = total_time;
+        this.average_speed = average_speed;
+        this.created_at = created_at;
+        this.server_id = server_id;
+    }
+
+    public TripModel(int user_id, String name, String about) {
+        this(0,user_id,name,about,0,0,0,new Date(Calendar.getInstance().getTime().getTime()),0);
     }
 
     //region Getters&Setters
 
-    public int getTrip_id() {
-        return trip_id;
+    public int getId() {
+        return id;
     }
 
-    public void setTrip_id(int trip_id) {
-        this.trip_id = trip_id;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getUser_id() {
@@ -46,12 +52,12 @@ public class TripModel {
         this.user_id = user_id;
     }
 
-    public String getTrip_name() {
-        return trip_name;
+    public String getName() {
+        return name;
     }
 
-    public void setTrip_name(String trip_name) {
-        this.trip_name = trip_name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getAbout() {
@@ -70,20 +76,20 @@ public class TripModel {
         this.total_distance = total_distance;
     }
 
-    public double getAverage_speed() {
-        return average_speed;
-    }
-
-    public void setAverage_speed(double average_speed) {
-        this.average_speed = average_speed;
-    }
-
     public double getTotal_time() {
         return total_time;
     }
 
     public void setTotal_time(double total_time) {
         this.total_time = total_time;
+    }
+
+    public double getAverage_speed() {
+        return average_speed;
+    }
+
+    public void setAverage_speed(double average_speed) {
+        this.average_speed = average_speed;
     }
 
     public Date getCreated_at() {
@@ -93,6 +99,15 @@ public class TripModel {
     public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
+
+    public int getServer_id() {
+        return server_id;
+    }
+
+    public void setServer_id(int server_id) {
+        this.server_id = server_id;
+    }
+
 
     //endregion
 }

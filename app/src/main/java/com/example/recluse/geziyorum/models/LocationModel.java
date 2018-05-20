@@ -8,30 +8,36 @@ import java.util.Calendar;
  */
 
 public class LocationModel {
-    private int location_id;
+    private int id;
     private int trip_id;
-    private int user_id;
-    private Date created_at;
     private double longitude;
     private double latitude;
+    private Date created_at;
+    private int server_id;
+    private int server_trip_id;
 
-    public LocationModel(int location_id, int trip_id, int user_id, double longitude, double latitude) {
-        this.location_id = location_id;
+    public LocationModel(int id, int trip_id, double longitude, double latitude, Date created_at, int server_id, int server_trip_id) {
+        this.id = id;
         this.trip_id = trip_id;
-        this.user_id = user_id;
-        this.created_at = new Date(Calendar.getInstance().getTime().getTime());
         this.longitude = longitude;
         this.latitude = latitude;
+        this.created_at = created_at;
+        this.server_id = server_id;
+        this.server_trip_id = server_trip_id;
+    }
+
+    public LocationModel(int trip_id, double longitude, double latitude) {
+        this(0,trip_id, longitude, latitude,new Date(Calendar.getInstance().getTime().getTime()),0,0);
     }
 
     //region Getters&Setters
 
-    public int getLocation_id() {
-        return location_id;
+    public int getId() {
+        return id;
     }
 
-    public void setLocation_id(int location_id) {
-        this.location_id = location_id;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getTrip_id() {
@@ -40,22 +46,6 @@ public class LocationModel {
 
     public void setTrip_id(int trip_id) {
         this.trip_id = trip_id;
-    }
-
-    public int getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
-    }
-
-    public Date getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(Date created_at) {
-        this.created_at = created_at;
     }
 
     public double getLongitude() {
@@ -73,6 +63,31 @@ public class LocationModel {
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
+
+    public Date getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
+    }
+
+    public int getServer_id() {
+        return server_id;
+    }
+
+    public void setServer_id(int server_id) {
+        this.server_id = server_id;
+    }
+
+    public int getServer_trip_id() {
+        return server_trip_id;
+    }
+
+    public void setServer_trip_id(int server_trip_id) {
+        this.server_trip_id = server_trip_id;
+    }
+
 
     //endregion
 }

@@ -23,6 +23,7 @@ import com.example.recluse.geziyorum.models.TripModel;
 import com.example.recluse.geziyorum.models.UserModel;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,22 +35,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        LocalDbHelper myDb = new LocalDbHelper(this);
 
-        int location_id = myDb.getNextLocationId(1,1);
-
-        LocationModel location = new LocationModel(location_id,1,1, 0,0);
-
-        int trip_id = myDb.getNextTripId(1);
-
-        TripModel trip = new TripModel(trip_id,1,"trip1","about1");
-
-        UserModel user = new UserModel(1,"bidi","idiburak@hotmail.com",
-                "123456","Burak idi", "Istanbul", "bio","photoapath",
-                new Date(Calendar.getInstance().getTime().getTime()), new Date(Calendar.getInstance().getTime().getTime()));
-        myDb.insertUser(user);
-        myDb.insertTrip(trip);
-        myDb.insertLocation(location);
 
 
         if(!runtime_permissions())

@@ -7,39 +7,41 @@ import java.sql.Date;
  */
 
 public class UserModel {
-    private int user_id;
+    private int id;
     private String username;
     private String email;
     private String password;
+    private String remember_token;
     private String name_surname;
+    private String photo_path;
     private String location;
     private String bio;
-    private Date created_at;
-    private String photo_path;
-    private String remember_token;
     private Date birthdate;
+    private Date created_at;
 
-    public UserModel(int user_id, String username, String email, String password, String name_surname, String location, String bio, String photo_path,  Date created_at, Date birthdate) {
-        this.user_id = user_id;
+    public UserModel(int id, String username, String email, String password, String remember_token, String name_surname, String photo_path, String location, String bio, Date birthdate, Date created_at) {
+        this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.remember_token = remember_token;
         this.name_surname = name_surname;
+        this.photo_path = photo_path;
         this.location = location;
         this.bio = bio;
-        this.created_at = created_at;
-        this.photo_path = photo_path;
         this.birthdate = birthdate;
+        this.created_at = created_at;
     }
 
-    public int getUser_id() {
-        return user_id;
-    }
 
     //region Getters&Setters
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -66,12 +68,28 @@ public class UserModel {
         this.password = password;
     }
 
+    public String getRemember_token() {
+        return remember_token;
+    }
+
+    public void setRemember_token(String remember_token) {
+        this.remember_token = remember_token;
+    }
+
     public String getName_surname() {
         return name_surname;
     }
 
     public void setName_surname(String name_surname) {
         this.name_surname = name_surname;
+    }
+
+    public String getPhoto_path() {
+        return photo_path;
+    }
+
+    public void setPhoto_path(String photo_path) {
+        this.photo_path = photo_path;
     }
 
     public String getLocation() {
@@ -90,6 +108,14 @@ public class UserModel {
         this.bio = bio;
     }
 
+    public Date getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
+    }
+
     public Date getCreated_at() {
         return created_at;
     }
@@ -98,29 +124,6 @@ public class UserModel {
         this.created_at = created_at;
     }
 
-    public String getPhoto_path() {
-        return photo_path;
-    }
-
-    public void setPhoto_path(String photo_path) {
-        this.photo_path = photo_path;
-    }
-
-    public String getRemember_token() {
-        return remember_token;
-    }
-
-    public void setRemember_token(String remember_token) {
-        this.remember_token = remember_token;
-    }
-
-    public Date getBirthdate() {
-        return birthdate;
-    }
-
-    public void setBirthdate(Date birthdate) {
-        this.birthdate = birthdate;
-    }
 
     //endregion
 }

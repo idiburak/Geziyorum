@@ -41,8 +41,8 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         name = holder.trip_name;
         info = holder.trip_info;
 
-        id.setText(Integer.toString(tripItem.getTrip_id()));
-        name.setText(tripItem.getTrip_name());
+        id.setText(Integer.toString(tripItem.getId()));
+        name.setText(tripItem.getName());
         info.setText(tripItem.getAbout());
 
 
