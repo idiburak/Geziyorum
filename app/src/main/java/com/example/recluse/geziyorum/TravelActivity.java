@@ -1,10 +1,15 @@
 package com.example.recluse.geziyorum;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,6 +30,8 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
     }
 
 
@@ -52,7 +59,7 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         }
         mMap.setMyLocationEnabled(true);
         // Add a marker in Sydney and move the camera
-        LatLng latLng = new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        //LatLng latLng = new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude());
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
     }
 }

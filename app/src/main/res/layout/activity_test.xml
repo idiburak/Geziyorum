@@ -6,7 +6,111 @@
     android:layout_height="match_parent"
     tools:context=".TestActivity">
 
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/fabStartStopMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="16dp"
+        app:menu_icon="@drawable/travel_fab_ss_menu"
+        app:menu_colorNormal="@color/deep_sky_blue"
+        app:menu_colorPressed="@color/blue"
+        app:menu_colorRipple="@color/dark_blue"
+        app:menu_showShadow="true"
+        app:menu_fab_label=""
+        app:menu_openDirection="up"
+        app:menu_backgroundColor="@android:color/transparent"
+        app:menu_labels_position="right"
 
+        >
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fabStartAndPauseTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/travel_fab_play"
+            app:fabSize="mini"
+            app:fab_colorNormal="@color/forest_green"
+
+            />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fabStopTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/travel_fab_stop"
+            app:fabSize="mini"
+            app:fab_colorNormal="@color/forest_green"
+
+            />
+
+    </com.github.clans.fab.FloatingActionMenu>
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/fabAddMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        app:menu_colorNormal="@color/dodger_blue"
+        app:menu_colorPressed="@color/blue"
+        app:menu_colorRipple="@color/dark_blue"
+        app:menu_showShadow="true"
+        app:menu_fab_label=""
+        app:menu_openDirection="up"
+        app:menu_backgroundColor="@android:color/transparent"
+
+        >
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fabAddPhotoTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/travel_fab_cam"
+            app:fabSize="mini"
+            app:fab_label="Add Photo"
+            app:fab_colorNormal="@color/forest_green"
+
+            />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fabAddVideoTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/travel_fab_video"
+            app:fabSize="mini"
+            app:fab_label="Add Video"
+            app:fab_colorNormal="@color/forest_green"
+
+            />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fabAddRecordTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/travel_fab_mic"
+            app:fabSize="mini"
+            app:fab_label="Add Record"
+            app:fab_colorNormal="@color/forest_green"
+
+            />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fabAddNoteTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/travel_fab_note"
+            app:fabSize="mini"
+            app:fab_label="Add Note"
+            app:fab_colorNormal="@color/forest_green"
+
+            />
+    </com.github.clans.fab.FloatingActionMenu>
+
+    <ImageView
+        android:id="@+id/imageViewTest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        app:srcCompat="@android:drawable/btn_dialog" />
 
 
 </android.support.design.widget.CoordinatorLayout>

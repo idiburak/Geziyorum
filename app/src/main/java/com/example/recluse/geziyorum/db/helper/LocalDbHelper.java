@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQuery;
 import android.util.Log;
 
+import com.example.recluse.geziyorum.db.bycrypt.BCrypt;
 import com.example.recluse.geziyorum.models.LocationModel;
 import com.example.recluse.geziyorum.models.MediaModel;
 import com.example.recluse.geziyorum.models.NoteModel;
@@ -323,7 +324,6 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         }
     }
 
-
     public boolean updateLocation(LocationModel location){
 
         String date = sdf.format(location.getCreated_at());
@@ -399,12 +399,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         }
     }
 
-
-
-
-
     //endregion
-
 
     //region Get Functions
 
@@ -510,7 +505,20 @@ public class LocalDbHelper extends SQLiteOpenHelper {
 
     }
 
-
     //endregion
 
+    //region Check User Pass
+
+    public boolean CheckUserName(String usernameOrEmail, String password){
+        String query = "SELECT password FROM users WHERE username = ? OR email = ?";
+        Cursor cursor = this.readableDb.rawQuery(query,new String[]{usernameOrEmail,usernameOrEmail});
+
+        if(cursor.moveToNext()){
+            return  BCrypt.checkpw(password, cursor.getString(0));
+        }
+
+        return false;
+    }
+
+    //endregion
 }
