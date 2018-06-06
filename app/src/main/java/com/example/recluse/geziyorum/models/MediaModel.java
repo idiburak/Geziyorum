@@ -34,7 +34,7 @@ public class MediaModel {
         this.path = user_id + "\\" + media_type + "\\" + trip_id + "\\" + location_id + "\\" + file_name;
     }
 
-    public MediaModel(int location_id, int trip_id, int user_id, String file_name, String path, String media_type) {
+    public MediaModel(int location_id, int trip_id, int user_id, String file_name, String media_type) {
         this(0,location_id,trip_id,user_id,file_name,media_type,new Date(Calendar.getInstance().getTime().getTime()),0,0,0);
     }
 

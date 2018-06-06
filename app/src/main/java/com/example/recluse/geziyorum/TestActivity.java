@@ -7,11 +7,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -45,6 +48,9 @@ public class TestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
 
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+
         btnStartService = findViewById(R.id.fabStartAndPauseTest);
         btnStopService = findViewById(R.id.fabStopTest);
         mImageView = findViewById(R.id.imageViewTest);
@@ -70,7 +76,12 @@ public class TestActivity extends AppCompatActivity {
             Log.d("button","photo");
             Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (i.resolveActivity(getPackageManager()) != null) {
-                startActivityForResult(i, PHOTO_CAPTURE);
+               File pictureDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+               String pictureName = getPictureName();
+               File imageFile = new File(pictureDirectory,pictureName);
+               Uri pictureUri = Uri.fromFile(imageFile);
+               i.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri);
+               startActivityForResult(i,PHOTO_CAPTURE);
             }
 
         });
@@ -87,6 +98,12 @@ public class TestActivity extends AppCompatActivity {
 
         //ArrayList<UserModel> users = myDb.GetUsers();
 
+    }
+
+    private String getPictureName(){
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date(Calendar.getInstance().getTime().getTime()));
+        String imageFileName = "JPEG_" + timeStamp + ".jpg";
+        return imageFileName;
     }
 //TODO burdan kamera ayarları yapılacak
     private File createImageFile() {
@@ -114,9 +131,7 @@ public class TestActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PHOTO_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            mImageView.setImageBitmap(imageBitmap);
+
         }
     }
 
