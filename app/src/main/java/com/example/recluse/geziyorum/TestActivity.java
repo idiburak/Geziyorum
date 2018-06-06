@@ -157,6 +157,7 @@ public class TestActivity extends AppCompatActivity {
         super.onDestroy();
         if(broadcastReceiver != null){
             unregisterReceiver(broadcastReceiver);
+            //
         }
     }
 
