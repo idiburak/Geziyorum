@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -23,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.recluse.geziyorum.db.helper.LocalDbHelper;
+import com.example.recluse.geziyorum.models.LocationModel;
 import com.example.recluse.geziyorum.models.UserModel;
 import com.github.clans.fab.FloatingActionButton;
 
@@ -40,6 +42,8 @@ public class TestActivity extends AppCompatActivity {
 
     private String currentPhotoPath;
 
+    private LocalDbHelper localDbHelper;
+
     private FloatingActionButton btnStartService,btnStopService,btnPhoto,btnVideo,btnNote,btnRecord;
     private ImageView mImageView;
 
@@ -47,7 +51,7 @@ public class TestActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
-
+        localDbHelper = new LocalDbHelper(this);
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
 
@@ -87,7 +91,8 @@ public class TestActivity extends AppCompatActivity {
         });
 
         btnVideo.setOnClickListener(view -> {
-            Log.d("button","video");
+            LocationModel locationModel = new LocationModel(1,2,3);
+            localDbHelper.insertLocation(locationModel);
 
         });
 
@@ -143,7 +148,19 @@ public class TestActivity extends AppCompatActivity {
                 @Override
                 public void onReceive(Context context, Intent i) {
                     Bundle extras = i.getExtras();
-                    Log.d("gps", extras.get("longitude") + " - " + extras.get("latitude"));
+                    Location newLocation = new Location("New Location");
+                    newLocation.setLongitude((Double) extras.get("longitude"));
+                    newLocation.setLatitude((Double) extras.get("latitude"));
+
+                    LocationModel lastLocationModel = localDbHelper.getLastLocation(1);
+                    Location lastLocation = new Location("Last Location");
+                    lastLocation.setLongitude(lastLocationModel.getLongitude());
+                    lastLocation.setLatitude(lastLocationModel.getLatitude());
+                    float distance = lastLocation.distanceTo(newLocation);
+                    if( distance > 5){
+                        long locid = localDbHelper.insertLocation(new LocationModel(1,(Double) extras.get("longitude"),(Double) extras.get("latitude")));
+                        System.out.println(locid);
+                    }
                 }
             };
             registerReceiver(broadcastReceiver, new IntentFilter("location_update"));

@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class TravelActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -168,7 +168,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public boolean insertTrip(TripModel trip){
+    public long insertTrip(TripModel trip){
 
         String date = sdf.format(trip.getCreated_at());
 
@@ -184,17 +184,11 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         values.put("created_at", date);
         values.put("server_id",trip.getServer_id());
 
-        long insertedId = this.writableDb.insert(TRIP_TABLE, null, values);
-        Log.d("inserted trip id", Long.toString(insertedId));
+        return this.writableDb.insert(TRIP_TABLE, null, values);
 
-        if(insertedId == -1){
-            return false;
-        }else{
-            return true;
-        }
     }
 
-    public boolean insertLocation(LocationModel location){
+    public long insertLocation(LocationModel location){
 
         String date = sdf.format(location.getCreated_at());
 
@@ -208,16 +202,11 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         values.put("server_id", location.getServer_id());
         values.put("server_trip_id", location.getServer_trip_id());
 
-        long insertedId = this.writableDb.insert(LOCATION_TABLE, null, values);
-        Log.d("inserted location id", Long.toString(insertedId));
-        if(insertedId == -1){
-            return false;
-        }else{
-            return true;
-        }
+        return this.writableDb.insert(LOCATION_TABLE, null, values);
+
     }
 
-    public boolean insertMedia(MediaModel media){
+    public long insertMedia(MediaModel media){
 
         String date = sdf.format(media.getCreated_at());
 
@@ -236,16 +225,11 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         values.put("server_trip_id",media.getServer_trip_id());
 
 
-        long insertedId = this.writableDb.insert(MEDIA_TABLE, null, values);
-        Log.d("inserted media id", Long.toString(insertedId));
-        if(insertedId == -1){
-            return false;
-        }else{
-            return true;
-        }
+        return this.writableDb.insert(MEDIA_TABLE, null, values);
+
     }
 
-    public boolean insertNote(NoteModel note){
+    public long insertNote(NoteModel note){
         String date = sdf.format(note.getCreated_at());
 
         ContentValues values = new ContentValues();
@@ -258,13 +242,8 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         values.put("server_location_id",note.getServer_location_id());
 
 
-        long insertedId = this.writableDb.insert(NOTES_TABLE, null, values);
-        Log.d("inserted media id", Long.toString(insertedId));
-        if(insertedId == -1){
-            return false;
-        }else{
-            return true;
-        }
+        return this.writableDb.insert(NOTES_TABLE, null, values);
+
     }
 
 
@@ -518,6 +497,28 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         }
 
         return false;
+    }
+
+    //endregion
+
+    //region Get Last Location
+    public LocationModel getLastLocation(int trip_id){
+        String query = "SELECT id,trip_id,longitude,latitude,created_at,server_id,server_trip_id FROM " + LOCATION_TABLE + " WHERE trip_id = ? ORDER BY id DESC;";
+        Cursor cursor = this.readableDb.rawQuery(query,new String[]{Integer.toString(trip_id)});
+
+        LocationModel location;
+
+        if(cursor.moveToNext()){
+            location = new LocationModel(
+                    cursor.getInt(0),cursor.getInt(1),cursor.getDouble(2),
+                    cursor.getDouble(3), new Date(cursor.getLong(4)),cursor.getInt(5),
+                    cursor.getInt(6)
+            );
+            return location;
+        }
+
+        return null;
+
     }
 
     //endregion

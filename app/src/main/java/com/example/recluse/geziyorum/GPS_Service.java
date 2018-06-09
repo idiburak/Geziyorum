@@ -47,10 +47,8 @@ public class GPS_Service extends Service implements LocationListener{
 
     @Override
     public void onDestroy(){
-        Log.d("service", "stopped but not");
         super.onDestroy();
         if(locationManager != null){
-
             //noinspection MissingPermission
             locationManager.removeUpdates(this);
         }
@@ -58,11 +56,14 @@ public class GPS_Service extends Service implements LocationListener{
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d("Location",location.toString());
-        Intent i = new Intent("location_update");
-        i.putExtra("longitude",location.getLongitude());
-        i.putExtra("latitude",location.getLatitude());
-        sendBroadcast(i);
+        if(location.hasAccuracy()&&location.getAccuracy()<=20){
+            Log.d("Location",location.toString());
+            Intent i = new Intent("location_update");
+            i.putExtra("longitude",location.getLongitude());
+            i.putExtra("latitude",location.getLatitude());
+            sendBroadcast(i);
+        }
+
     }
 
     @Override
