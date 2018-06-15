@@ -3,6 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:longClickable="true"
+    android:clickable="true"
     android:layout_margin="10dp">
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,7 +24,7 @@
                 android:text="1"
                 android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="24sp"
+                android:textSize="18sp"
                 />
             <View
                 android:layout_width="1dp"
@@ -65,4 +67,13 @@
         android:layout_height="24dp"
         android:layout_gravity="bottom|right"
         android:background="@drawable/ic_arrow_right"/>
+    <Button
+        android:id="@+id/tripCard_sync"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="5dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|right"
+        android:background="@drawable/ic_sync_disabled"/>
 </android.support.v7.widget.CardView>

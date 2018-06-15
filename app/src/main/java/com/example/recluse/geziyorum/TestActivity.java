@@ -3,6 +3,7 @@ package com.example.recluse.geziyorum;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -16,15 +17,22 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethod;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.recluse.geziyorum.db.helper.LocalDbHelper;
 import com.example.recluse.geziyorum.models.LocationModel;
+import com.example.recluse.geziyorum.models.NoteModel;
+import com.example.recluse.geziyorum.models.TripModel;
 import com.example.recluse.geziyorum.models.UserModel;
 import com.github.clans.fab.FloatingActionButton;
 
@@ -52,20 +60,53 @@ public class TestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
         localDbHelper = new LocalDbHelper(this);
-        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-        StrictMode.setVmPolicy(builder.build());
 
         btnStartService = findViewById(R.id.fabStartAndPauseTest);
         btnStopService = findViewById(R.id.fabStopTest);
         mImageView = findViewById(R.id.imageViewTest);
         btnPhoto = findViewById(R.id.fabAddPhotoTest);
         btnVideo = findViewById(R.id.fabAddVideoTest);
+        btnNote = findViewById(R.id.fabAddNoteTest);
 
         if(!runtime_permissions()){
             btnStartService.setOnClickListener(view -> {
-                Log.d("button","start");
-                Intent i = new Intent(getApplicationContext(),GPS_Service.class);
-                startService(i);
+                EditText editTripName = new EditText(this);
+                editTripName.setHint("Enter Trip Name");
+
+                final AlertDialog alertDialogName = new AlertDialog.Builder(this)
+                        .setTitle("Add Name to Trip")
+                        .setView(editTripName)
+                        .setPositiveButton("Next", (dialog, whichButton) -> {
+
+                            EditText editTripAbout = new EditText(this);
+                            editTripAbout.setHint("Enter Trip About");
+
+                            new AlertDialog.Builder(this)
+                                    .setTitle("Add About to Trip")
+                                    .setView(editTripAbout)
+                                    .setPositiveButton("Start Trip", (dialog2, whichButton2) -> {
+                                        TripModel tripModel = new TripModel(1,editTripName.getText().toString(),editTripAbout.getText().toString());
+                                        long insertedId = localDbHelper.insertTrip(tripModel);
+
+                                        Log.d("button","start");
+                                        Intent i = new Intent(getApplicationContext(),GPS_Service.class);
+                                        startService(i);
+
+                                    })
+                                    .setNegativeButton("Cancel", (dialog2, whichButton2) -> {
+                                        dialog2.dismiss();
+                                    })
+                                    .show();
+
+
+                        })
+                        .setNegativeButton("Cancel", (dialog, whichButton) -> {
+                            dialog.cancel();
+                        })
+                        .show();
+
+
+
             });
 
             btnStopService.setOnClickListener(view -> {
@@ -96,12 +137,29 @@ public class TestActivity extends AppCompatActivity {
 
         });
 
+        btnNote.setOnClickListener(view -> {
+            EditText note = new EditText(this);
+            note.setHint("Enter Your Note Here");
+            note.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+            note.setSingleLine(false);
+            note.setLines(6);
+            note.setMaxLines(10);
+            note.setFilters(new InputFilter[]{new InputFilter.LengthFilter(255)});
+            note.setVerticalScrollBarEnabled(true);
+            new AlertDialog.Builder(this)
+                    .setTitle("Add Note to Location")
+                    .setView(note)
+                    .setPositiveButton("Add Note", (dialog, whichButton) -> {
+                        String noteTxt = note.getText().toString();
+                        NoteModel tmp = new NoteModel(localDbHelper.getLastLocation(1).getId(),noteTxt);
+                        localDbHelper.insertNote(tmp);
 
-        LocalDbHelper myDb = new LocalDbHelper(this);
+                    })
+                    .setNegativeButton("Cancel", (dialog, whichButton) -> {
 
-        //myDb.insertUser(new UserModel(2,"","","","","","","","",new Date(Calendar.getInstance().getTime().getTime()),new Date(Calendar.getInstance().getTime().getTime())));
-
-        //ArrayList<UserModel> users = myDb.GetUsers();
+                    })
+                    .show();
+        });
 
     }
 
@@ -110,28 +168,6 @@ public class TestActivity extends AppCompatActivity {
         String imageFileName = "JPEG_" + timeStamp + ".jpg";
         return imageFileName;
     }
-//TODO burdan kamera ayarları yapılacak
-    private File createImageFile() {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date(Calendar.getInstance().getTime().getTime()));
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = null;
-        try {
-            image = File.createTempFile(
-                    imageFileName,  /* prefix */
-                    ".jpg",         /* suffix */
-                    storageDir      /* directory */
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQuery;
+import android.location.Location;
 import android.util.Log;
 
 import com.example.recluse.geziyorum.db.bycrypt.BCrypt;
@@ -16,6 +17,7 @@ import com.example.recluse.geziyorum.models.TripModel;
 import com.example.recluse.geziyorum.models.UserModel;
 
 import java.sql.Date;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -34,7 +36,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
 
     private SQLiteDatabase readableDb;
     private SQLiteDatabase writableDb;
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
 
     public LocalDbHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -395,7 +397,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
                     cursor.getInt(0),cursor.getString(1),cursor.getString(2),
                     cursor.getString(3),cursor.getString(4),cursor.getString(5),
                     cursor.getString(6),cursor.getString(7),cursor.getString(8),
-                    new Date(cursor.getLong(9)),new Date(cursor.getLong(10))
+                    GetSqlDateFromStr(cursor.getString(9)),GetSqlDateFromStr(cursor.getString(10))
             );
             users.add(user);
         }
@@ -414,7 +416,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
             trip = new TripModel(
                     cursor.getInt(0),cursor.getInt(1),cursor.getString(2),
                     cursor.getString(3),cursor.getDouble(4),cursor.getDouble(5),
-                    cursor.getDouble(6),new Date(cursor.getLong(7)),cursor.getInt(8)
+                    cursor.getDouble(6),GetSqlDateFromStr(cursor.getString(7)),cursor.getInt(8)
             );
             trips.add(trip);
         }
@@ -425,19 +427,26 @@ public class LocalDbHelper extends SQLiteOpenHelper {
     public ArrayList<LocationModel> GetLocations(int trip_id){
         ArrayList<LocationModel> locations = new ArrayList<>();
 
-        String query = "SELECT id,trip_id,longitude,latitude,created_at,server_id,server_trip_id FROM " + LOCATION_TABLE + " WHERE trip_id = ? ;";
+        String query = "SELECT id,trip_id,longitude,latitude,created_at,server_id,server_trip_id FROM " + LOCATION_TABLE + " WHERE trip_id = ? ORDER BY id ASC;";
         Cursor cursor = this.readableDb.rawQuery(query,new String[]{Integer.toString(trip_id)});
 
         LocationModel location;
 
         while(cursor.moveToNext()){
+
+
+
             location = new LocationModel(
                     cursor.getInt(0),cursor.getInt(1),cursor.getDouble(2),
-                    cursor.getDouble(3), new Date(cursor.getLong(4)),cursor.getInt(5),
+                    cursor.getDouble(3), GetSqlDateFromStr(cursor.getString(4)),cursor.getInt(5),
                     cursor.getInt(6)
             );
+
+
             locations.add(location);
         }
+
+        cursor.close();
 
         return locations;
     }
@@ -454,7 +463,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
             med = new MediaModel(
                     cursor.getInt(0),cursor.getInt(1),cursor.getInt(2),
                     cursor.getInt(3),cursor.getString(4),cursor.getString(6),
-                    new Date(cursor.getLong(7)),cursor.getInt(8),cursor.getInt(9),
+                    GetSqlDateFromStr(cursor.getString(7)),cursor.getInt(8),cursor.getInt(9),
                     cursor.getInt(10)
             );
             media.add(med);
@@ -474,7 +483,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         while (cursor.moveToNext()){
             note = new NoteModel(
                     cursor.getInt(0),cursor.getInt(1),cursor.getString(2),
-                    new Date(cursor.getLong(3)), cursor.getInt(4),cursor.getInt(5)
+                    GetSqlDateFromStr(cursor.getString(3)), cursor.getInt(4),cursor.getInt(5)
             );
             notes.add(note);
 
@@ -501,7 +510,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
 
     //endregion
 
-    //region Get Last Location
+    //region Single Get Functions
     public LocationModel getLastLocation(int trip_id){
         String query = "SELECT id,trip_id,longitude,latitude,created_at,server_id,server_trip_id FROM " + LOCATION_TABLE + " WHERE trip_id = ? ORDER BY id DESC;";
         Cursor cursor = this.readableDb.rawQuery(query,new String[]{Integer.toString(trip_id)});
@@ -511,15 +520,80 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         if(cursor.moveToNext()){
             location = new LocationModel(
                     cursor.getInt(0),cursor.getInt(1),cursor.getDouble(2),
-                    cursor.getDouble(3), new Date(cursor.getLong(4)),cursor.getInt(5),
+                    cursor.getDouble(3), GetSqlDateFromStr(cursor.getString(4)),cursor.getInt(5),
                     cursor.getInt(6)
             );
             return location;
         }
 
-        return null;
+        return new LocationModel(0,0,0);
 
     }
 
+    public TripModel getTrip(int trip_id){
+        String query = "SELECT id,user_id,name,about,total_distance,total_time,average_speed,created_at,server_id FROM " + TRIP_TABLE + " WHERE id = ? ;";
+        Cursor cursor = this.readableDb.rawQuery(query,new String[]{Integer.toString(trip_id)});
+
+        TripModel trip;
+
+        if(cursor.moveToNext()){
+            trip = new TripModel(
+                    cursor.getInt(0),cursor.getInt(1),cursor.getString(2),
+                    cursor.getString(3),cursor.getDouble(4),cursor.getDouble(5),
+                    cursor.getDouble(6),GetSqlDateFromStr(cursor.getString(7)),cursor.getInt(8)
+            );
+            return trip;
+        }
+
+        return new TripModel(0,"","");
+    }
+
     //endregion
+
+    public void FinishTrip(int trip_id){
+        ArrayList<LocationModel> locations = GetLocations(trip_id);
+        TripModel trip = getTrip(trip_id);
+
+        float totalDistance = 0;
+        for(int i=1 ; i<locations.size() ; i++){
+            totalDistance = totalDistance + DistanceBetweenTwoLocation(locations.get(i-1),locations.get(i));
+        }
+
+        Date start = locations.get(0).getCreated_at();
+        Date stop = locations.get(locations.size()-1).getCreated_at();
+        long totalTime = (stop.getTime() - start.getTime())/1000;
+
+        trip.setTotal_distance(totalDistance);
+        trip.setTotal_time((double)totalTime);
+        trip.setAverage_speed(totalDistance/totalTime);
+
+        updateTrip(trip);
+
+        System.out.println(totalDistance + " " + totalTime);
+
+
+    }
+
+    private float DistanceBetweenTwoLocation(LocationModel loc1, LocationModel loc2){
+
+        Location firstLocation = new Location("First Location");
+        firstLocation.setLongitude(loc1.getLongitude());
+        firstLocation.setLatitude(loc1.getLatitude());
+
+        Location secondLocation = new Location("Second Location");
+        secondLocation.setLongitude(loc2.getLongitude());
+        secondLocation.setLatitude(loc2.getLatitude());
+
+        return firstLocation.distanceTo(secondLocation);
+    }
+
+    private Date GetSqlDateFromStr(String dateStr){
+
+        try {
+            return new Date(sdf.parse(dateStr).getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return new Date(0);
+    }
 }

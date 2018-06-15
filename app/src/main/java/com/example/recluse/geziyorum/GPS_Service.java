@@ -37,7 +37,6 @@ public class GPS_Service extends Service implements LocationListener{
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-        Log.d("service", "started");
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
         //noinspection MissingPermission

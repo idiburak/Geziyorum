@@ -56,6 +56,7 @@
 
     <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/fabAddMenu"
+        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"

@@ -5,24 +5,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".TripDetailActivity">
+    tools:context=".TripDetailActivity"
+    android:weightSum="3">
 
-
-    <TextView
-        android:id="@+id/detailTripId"
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/tripDetailMap"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_height="match_parent"
+        tools:context=".TripDetailActivity"
+        android:layout_weight="1"/>
 
-    <TextView
-        android:id="@+id/detailTripName"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_height="match_parent"
+        android:layout_weight="2">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="asdgasd"/>
 
-    <TextView
-        android:id="@+id/detailTripAbout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+
+    </LinearLayout>
+
+
+
+
 </LinearLayout>
