@@ -5,11 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQuery;
 import android.location.Location;
 import android.util.Log;
 
+import com.example.recluse.geziyorum.db.Constants;
 import com.example.recluse.geziyorum.db.bycrypt.BCrypt;
+import com.example.recluse.geziyorum.models.LocationMediaModel;
 import com.example.recluse.geziyorum.models.LocationModel;
 import com.example.recluse.geziyorum.models.MediaModel;
 import com.example.recluse.geziyorum.models.NoteModel;
@@ -33,6 +34,8 @@ public class LocalDbHelper extends SQLiteOpenHelper {
     public static final String LOCATION_TABLE = "locations";
     public static final String MEDIA_TABLE = "media";
     public static final String NOTES_TABLE = "notes";
+    public static final String SETTINGS_TABLE = "settings";
+
 
     private SQLiteDatabase readableDb;
     private SQLiteDatabase writableDb;
@@ -121,11 +124,20 @@ public class LocalDbHelper extends SQLiteOpenHelper {
                         " ); "
                 ;
 
+        String sqlSettings =
+                "CREATE TABLE IF NOT EXISTS " + SETTINGS_TABLE +
+                        " ( " +
+                        "type VARCHAR(25), " +
+                        "value INTEGER" +
+                        " ); "
+                ;
+
         db.execSQL(sqlUser);
         db.execSQL(sqlTrip);
         db.execSQL(sqlLocation);
         db.execSQL(sqlMedia);
         db.execSQL(sqlNote);
+        db.execSQL(sqlSettings);
     }
 
     @Override
@@ -493,6 +505,23 @@ public class LocalDbHelper extends SQLiteOpenHelper {
 
     }
 
+    public ArrayList<LocationMediaModel> GetPhotos(int trip_id){
+        ArrayList<LocationMediaModel> photos = new ArrayList<>();
+
+        String query = "SELECT l.id, m.id, l.longitude, l.latitude, m.path, m.file_name" +
+                " FROM " + LOCATION_TABLE + " as l, " + MEDIA_TABLE + " as m WHERE l.id = m.location_id AND l.trip_id = ? AND m.media_type = ?;";
+        Cursor cursor = this.readableDb.rawQuery(query,new String[]{Integer.toString(trip_id), Constants.MEDIA_TYPE_PHOTO});
+
+        LocationMediaModel locationMediaModel;
+        while(cursor.moveToNext()){
+            locationMediaModel = new LocationMediaModel(cursor.getInt(0),trip_id,cursor.getInt(1),
+                    cursor.getDouble(2),cursor.getDouble(3),cursor.getString(4),cursor.getString(5));
+            photos.add(locationMediaModel);
+        }
+
+        return photos;
+    }
+
     //endregion
 
     //region Check User Pass
@@ -548,6 +577,8 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         return new TripModel(0,"","");
     }
 
+
+
     //endregion
 
     public void FinishTrip(int trip_id){
@@ -562,7 +593,8 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         Date start = locations.get(0).getCreated_at();
         Date stop = locations.get(locations.size()-1).getCreated_at();
         long totalTime = (stop.getTime() - start.getTime())/1000;
-
+        if(totalTime <= 0)
+            totalTime = 1;
         trip.setTotal_distance(totalDistance);
         trip.setTotal_time((double)totalTime);
         trip.setAverage_speed(totalDistance/totalTime);

@@ -31,7 +31,7 @@ public class MediaModel {
         this.server_id = server_id;
         this.server_location_id = server_location_id;
         this.server_trip_id = server_trip_id;
-        this.path = user_id + "\\" + media_type + "\\" + trip_id + "\\" + location_id + "\\" + file_name;
+        this.path = user_id + "/" + media_type + "/" + trip_id + "/" + location_id + "/";
     }
 
     public MediaModel(int location_id, int trip_id, int user_id, String file_name, String media_type) {

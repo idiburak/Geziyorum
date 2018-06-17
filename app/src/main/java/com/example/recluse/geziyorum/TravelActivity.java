@@ -10,6 +10,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -20,12 +21,14 @@ import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.recluse.geziyorum.db.helper.LocalDbHelper;
 import com.example.recluse.geziyorum.models.LocationModel;
+import com.example.recluse.geziyorum.models.MediaModel;
 import com.example.recluse.geziyorum.models.NoteModel;
 import com.example.recluse.geziyorum.models.TripModel;
 import com.github.clans.fab.FloatingActionButton;
@@ -35,6 +38,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
@@ -42,11 +46,13 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
+import com.example.recluse.geziyorum.db.Constants;
 
 public class TravelActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private final int PHOTO_CAPTURE = 0;
-    private final int VIDEO_CAPTURE = 1;
+
 
     private static int USER_ID;
     private static long TRIP_ID;
@@ -61,6 +67,7 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
     private FloatingActionMenu btnAddMenu;
 
     private FloatingActionButton btnStartAndPauseService,btnStopService,btnPhoto,btnVideo,btnNote,btnRecord;
+    private MediaModel photo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +83,6 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         EnableGpsButtons();
 
         EnableAddButtons();
-
-        ArrayList<LocationModel> locations = localDbHelper.GetLocations(3);
-
-        System.out.println();
-
 
     }
 
@@ -133,13 +135,15 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
             return;
         }
         mMap.setMyLocationEnabled(true);
+
+
         // Add a marker in Sydney and move the camera
         //LatLng latLng = new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude());
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
     }
 
     private void EnableGpsButtons() {
-        if(!runtime_permissions()){
+        if(checkPermissions()){
             btnStartAndPauseService.setOnClickListener(view -> {
 
                 EditText editTripName = new EditText(this);
@@ -201,19 +205,23 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
             Log.d("button","photo");
             Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (i.resolveActivity(getPackageManager()) != null) {
-                File pictureDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-                String pictureName = getPictureName();
-                File imageFile = new File(pictureDirectory,pictureName);
+                photo = new MediaModel((int)LOCATION_ID,(int)TRIP_ID,USER_ID,getPictureName(), Constants.MEDIA_TYPE_PHOTO);
+                File pictureDirectory = CreateDirectory(photo.getPath());
+                File imageFile = new File(pictureDirectory,photo.getFile_name());
                 Uri pictureUri = Uri.fromFile(imageFile);
                 i.putExtra(MediaStore.EXTRA_OUTPUT,pictureUri);
-                startActivityForResult(i,PHOTO_CAPTURE);
+                startActivityForResult(i,Constants.PHOTO_CAPTURE);
             }
 
         });
 
         btnVideo.setOnClickListener(view -> {
-            LocationModel locationModel = new LocationModel(1,2,3);
-            localDbHelper.insertLocation(locationModel);
+
+
+        });
+
+        btnRecord.setOnClickListener(view -> {
+
 
         });
 
@@ -233,6 +241,7 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
                         String noteTxt = note.getText().toString();
                         NoteModel tmp = new NoteModel(localDbHelper.getLastLocation(1).getId(),noteTxt);
                         localDbHelper.insertNote(tmp);
+                        Toast.makeText(this, "Note added!", Toast.LENGTH_SHORT).show();
 
                     })
                     .setNegativeButton("Cancel", (dialog, whichButton) -> {
@@ -242,7 +251,28 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Constants.PHOTO_CAPTURE && resultCode == RESULT_OK) {
+            Toast.makeText(this, "Photo captured!", Toast.LENGTH_SHORT).show();
+            localDbHelper.insertMedia(photo);
+        }
+    }
+
+    private File CreateDirectory(String path){
+        String filePath = Environment.getExternalStorageDirectory() + "/Geziyorum/" + path;
+        File mediaDirectory = Environment.getExternalStoragePublicDirectory(filePath);
+        if(!mediaDirectory.exists()){
+            if(!mediaDirectory.mkdirs()){
+                System.out.println("cannot create dir");
+            }
+        }
+
+        return mediaDirectory;
+    }
+
     private String getPictureName(){
+
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date(Calendar.getInstance().getTime().getTime()));
         String imageFileName = "JPEG_" + timeStamp + ".jpg";
         return imageFileName;
@@ -268,29 +298,47 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
 
         btnStopService.setEnabled(false);
 
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+
     }
 
     //region Request Permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == 100){
-            if( grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
-                Toast.makeText(this,"GPS Permission Result is OK!",Toast.LENGTH_SHORT);
-            }else {
-                runtime_permissions();
+        if (requestCode == 100) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                /// permission was granted, yay! Do the
+                // contacts-related task you need to do.
+
+            } else {
+                checkPermissions();
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
             }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+            return;
         }
     }
 
-    private boolean runtime_permissions() {
-        if(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},100);
-
-            return true;
+    private boolean checkPermissions() {
+        int result;
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String p : Constants.PERMISSIONS) {
+            result = ContextCompat.checkSelfPermission(this, p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(p);
+            }
         }
-        return false;
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), 100);
+            return false;
+        }
+        return true;
     }
     //endregion
 
@@ -307,5 +355,7 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         return lastLocation.distanceTo(newLocation);
 
     }
+
+
     //endregion
 }

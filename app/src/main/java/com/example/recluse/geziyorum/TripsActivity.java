@@ -32,6 +32,8 @@ public class TripsActivity extends AppCompatActivity {
 
         this.tripList = localDbHelper.GetTrips(USER_ID);
 
+
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         RecyclerView.LayoutManager recLayoutManager = layoutManager;
 
