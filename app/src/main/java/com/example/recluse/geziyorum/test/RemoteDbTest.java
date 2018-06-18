@@ -1,11 +1,18 @@
 package com.example.recluse.geziyorum.test;
 
-import com.example.recluse.geziyorum.db.helper.RemoteDbHelper;
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class RemoteDbTest {
 
     public static void main(String[] args){
-        RemoteDbHelper db = new RemoteDbHelper();
-        System.out.println(db.checkPassword("cemaltaskiran@gmail.com","secret"));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = new Date(sdf.parse("1995-03-01").getTime());
+            System.out.println(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }

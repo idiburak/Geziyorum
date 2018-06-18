@@ -18,17 +18,21 @@
         tools:context=".TripDetailActivity"
         android:layout_weight="1"/>
 
-    <LinearLayout
+    <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:scrollbars="horizontal"
         android:layout_weight="2">
-        <EditText
+        <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="asdgasd"/>
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            >
 
 
-    </LinearLayout>
+        </android.support.v7.widget.RecyclerView>
+    </android.support.v4.widget.NestedScrollView>
+
 
 
 

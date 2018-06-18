@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -49,6 +50,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import com.example.recluse.geziyorum.db.Constants;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class TravelActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -67,7 +69,10 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
     private FloatingActionMenu btnAddMenu;
 
     private FloatingActionButton btnStartAndPauseService,btnStopService,btnPhoto,btnVideo,btnNote,btnRecord;
-    private MediaModel photo;
+
+    private MediaModel photo,video;
+
+    private LocationModel oldLocation, newLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +100,10 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
                 public void onReceive(Context context, Intent i) {
                     Bundle extras = i.getExtras();
                     if( GetDistanceBetweenLastAndNew(extras) > 5){
+                        oldLocation = localDbHelper.getLastLocation((int)TRIP_ID);
                         LOCATION_ID = localDbHelper.insertLocation(new LocationModel((int)TRIP_ID,(Double) extras.get("longitude"),(Double) extras.get("latitude")));
+                        newLocation = localDbHelper.getLastLocation((int)TRIP_ID);
+                        PrintLinesToMap();
                     }
                 }
             };
@@ -145,7 +153,7 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
     private void EnableGpsButtons() {
         if(checkPermissions()){
             btnStartAndPauseService.setOnClickListener(view -> {
-
+/*
                 EditText editTripName = new EditText(this);
                 editTripName.setHint("Name...");
 
@@ -164,7 +172,6 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
                                         TripModel tripModel = new TripModel(USER_ID,editTripName.getText().toString(),editTripAbout.getText().toString());
                                         TRIP_ID = localDbHelper.insertTrip(tripModel);
 
-                                        Log.d("button","start");
                                         Intent i = new Intent(getApplicationContext(),GPS_Service.class);
 
                                         btnAddMenu.setEnabled(true);
@@ -186,6 +193,20 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
                             dialog.cancel();
                         })
                         .show();
+
+                        */
+
+                TripModel tripModel = new TripModel(USER_ID,"name","about");
+                TRIP_ID = localDbHelper.insertTrip(tripModel);
+
+                Intent i = new Intent(getApplicationContext(),GPS_Service.class);
+
+                btnAddMenu.setEnabled(true);
+                btnAddMenu.setVisibility(View.VISIBLE);
+
+                btnStopService.setEnabled(true);
+                btnStartAndPauseService.setEnabled(false);
+                startService(i);
             });
 
             btnStopService.setOnClickListener(view -> {
@@ -193,7 +214,9 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
                 btnAddMenu.setEnabled(false);
                 btnAddMenu.setVisibility(View.INVISIBLE);
                 btnStopService.setEnabled(false);
+                btnStartAndPauseService.setEnabled(true);
                 stopService(i);
+                mMap.clear();
                 localDbHelper.FinishTrip((int)TRIP_ID);
             });
 
@@ -216,7 +239,17 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         });
 
         btnVideo.setOnClickListener(view -> {
+            Intent i = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 
+            if (i.resolveActivity(getPackageManager()) != null) {
+                video = new MediaModel((int)LOCATION_ID,(int)TRIP_ID,USER_ID,getVideoName(),Constants.MEDIA_TYPE_VIDEO);
+                File videoDirectory = CreateDirectory(video.getPath());
+                File videoFile = new File(videoDirectory,video.getFile_name());
+                Uri videoUri = Uri.fromFile(videoFile);
+                i.putExtra(MediaStore.EXTRA_OUTPUT,videoUri);
+
+                startActivityForResult(i, Constants.VIDEO_CAPTURE);
+            }
 
         });
 
@@ -239,7 +272,7 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
                     .setView(note)
                     .setPositiveButton("Add Note", (dialog, whichButton) -> {
                         String noteTxt = note.getText().toString();
-                        NoteModel tmp = new NoteModel(localDbHelper.getLastLocation(1).getId(),noteTxt);
+                        NoteModel tmp = new NoteModel((int)LOCATION_ID,noteTxt);
                         localDbHelper.insertNote(tmp);
                         Toast.makeText(this, "Note added!", Toast.LENGTH_SHORT).show();
 
@@ -256,6 +289,9 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         if (requestCode == Constants.PHOTO_CAPTURE && resultCode == RESULT_OK) {
             Toast.makeText(this, "Photo captured!", Toast.LENGTH_SHORT).show();
             localDbHelper.insertMedia(photo);
+        }else if (requestCode == Constants.VIDEO_CAPTURE && resultCode == RESULT_OK) {
+            Toast.makeText(this, "Video captured!", Toast.LENGTH_SHORT).show();
+            localDbHelper.insertMedia(video);
         }
     }
 
@@ -272,10 +308,15 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
     }
 
     private String getPictureName(){
-
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date(Calendar.getInstance().getTime().getTime()));
-        String imageFileName = "JPEG_" + timeStamp + ".jpg";
-        return imageFileName;
+        String fileName = "JPEG_" + timeStamp + ".jpg";
+        return fileName;
+    }
+
+    private String getVideoName(){
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_ssmmHH").format(new Date(Calendar.getInstance().getTime().getTime()));
+        String fileName = LOCATION_ID + "_" + timeStamp + ".mp4";
+        return fileName;
     }
 
     private void InitializeVariables(){
@@ -353,6 +394,16 @@ public class TravelActivity extends FragmentActivity implements OnMapReadyCallba
         lastLocation.setLongitude(lastLocationModel.getLongitude());
         lastLocation.setLatitude(lastLocationModel.getLatitude());
         return lastLocation.distanceTo(newLocation);
+
+    }
+
+    private void PrintLinesToMap(){
+        if(oldLocation.getId() != 0){
+            LatLng src = new LatLng(oldLocation.getLatitude(),oldLocation.getLongitude());
+            LatLng dst = new LatLng(newLocation.getLatitude(),newLocation.getLongitude());
+
+            mMap.addPolyline(new PolylineOptions().add(src,dst).width(3).color(Color.RED).geodesic(true));
+        }
 
     }
 

@@ -3,12 +3,26 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/infoImageView"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/common_google_signin_btn_icon_dark"
-        android:scaleType="centerInside"
-        />
+    <RelativeLayout android:layout_height="100dp"
+        android:layout_width="100dp">
+        <ImageView
+            android:id="@+id/infoImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/travel_fab_note"
+            android:scaleType="centerCrop"
+            />
+
+        <TextView
+            android:id="@+id/infoTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:gravity="center"
+            android:text="Open Note"
+            android:textSize="15sp"
+            android:textColor="#000000" />
+    </RelativeLayout>
+
 
 </LinearLayout>

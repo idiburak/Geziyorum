@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import junit.framework.Test;
+
 public class SplashActivity extends Activity {
 
     @Override
@@ -18,7 +20,7 @@ public class SplashActivity extends Activity {
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }finally{
-                    Intent intent = new Intent(SplashActivity.this,MainActivity.class);
+                    Intent intent = new Intent(SplashActivity.this,TestActivity.class);
                     startActivity(intent);
                 }
             }

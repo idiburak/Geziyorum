@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethod;
@@ -30,22 +32,41 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
+import com.android.volley.NoConnectionError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.recluse.geziyorum.db.Constants;
 import com.example.recluse.geziyorum.db.helper.LocalDbHelper;
+import com.example.recluse.geziyorum.models.LocationMediaModel;
 import com.example.recluse.geziyorum.models.LocationModel;
 import com.example.recluse.geziyorum.models.MediaModel;
 import com.example.recluse.geziyorum.models.NoteModel;
 import com.example.recluse.geziyorum.models.TripModel;
 import com.example.recluse.geziyorum.models.UserModel;
+import com.example.recluse.geziyorum.utils.AppHelper;
+import com.example.recluse.geziyorum.utils.ExifUtil;
+import com.example.recluse.geziyorum.utils.VolleyMultipartRequest;
+import com.example.recluse.geziyorum.utils.VolleySingleton;
 import com.github.clans.fab.FloatingActionButton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver;
@@ -57,7 +78,7 @@ public class TestActivity extends AppCompatActivity {
 
     private LocalDbHelper localDbHelper;
 
-    private FloatingActionButton btnStartService,btnStopService,btnPhoto,btnVideo,btnNote,btnRecord;
+    private FloatingActionButton btnStartService, btnStopService, btnPhoto, btnVideo, btnNote, btnRecord;
     private ImageView mImageView;
 
     private int USER_ID = 0;
@@ -70,14 +91,16 @@ public class TestActivity extends AppCompatActivity {
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
     };
-    private MediaModel photo;
+    private MediaModel photo, video;
+    private ArrayList<LocationMediaModel> photos,videos;
+    private Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
         localDbHelper = new LocalDbHelper(this);
-
+/*
         btnStartService = findViewById(R.id.fabStartAndPauseTest);
         btnStopService = findViewById(R.id.fabStopTest);
         mImageView = findViewById(R.id.imageViewTest);
@@ -152,8 +175,17 @@ public class TestActivity extends AppCompatActivity {
         });
 
         btnVideo.setOnClickListener(view -> {
-            LocationModel locationModel = new LocationModel(1,2,3);
-            localDbHelper.insertLocation(locationModel);
+            Intent i = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+            if (i.resolveActivity(getPackageManager()) != null) {
+                video = new MediaModel(LOCATION_ID,TRIP_ID,USER_ID,getVideoName(),Constants.MEDIA_TYPE_VIDEO);
+                File videoDirectory = CreateDirectory(video.getPath());
+                File videoFile = new File(videoDirectory,video.getFile_name());
+                Uri videoUri = Uri.fromFile(videoFile);
+                i.putExtra(MediaStore.EXTRA_OUTPUT,videoUri);
+
+                startActivityForResult(i, Constants.VIDEO_CAPTURE);
+            }
 
         });
 
@@ -181,18 +213,91 @@ public class TestActivity extends AppCompatActivity {
                     .show();
         });
 
+*/
+        photos = localDbHelper.GetPhotos(1);
+        File imageFile = new File(Constants.STORAGE_PATH + Environment.getExternalStorageDirectory() + "/Geziyorum/" + photos.get(0).getPath(), photos.get(0).getFile_name());
+        String imageString = "";
+        if (imageFile.exists()) {
+            bitmap = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(), BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
+            imageString = getStringImage(bitmap);
+
+        }
+
+        videos = localDbHelper.GetVideos(4);
+        File videoFile = new File(Constants.STORAGE_PATH + Environment.getExternalStorageDirectory() + "/Geziyorum/" + videos.get(0).getPath(), videos.get(0).getFile_name());
+        if(videoFile.exists()){
+            System.out.println();
+        }else{
+            System.out.println("file does not exist");
+        }
+
+        VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, Constants.MEDIA_STORE_URL,
+                response -> {
+                    String resultResponse = new String(response.data);
+                    try {
+                        JSONObject result = new JSONObject(resultResponse);
+                        System.out.println("");
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> {
+
+                    error.printStackTrace();
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("user_id", "1");
+                params.put("trip_id", "1");
+                params.put("location_id", "1");
+                params.put("media_type_id", "3");
+                return params;
+            }
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                // file name could found file base or direct access from real path
+                // for now just get bitmap data from ImageView
+                //video/mp4
+                //params.put("file", new VolleyMultipartRequest.DataPart(photos.get(0).getFile_name(), AppHelper.getBitmapData(bitmap), "image/jpeg"));
+                params.put("file", new VolleyMultipartRequest.DataPart(videos.get(0).getFile_name(), AppHelper.getVideoData(videoFile.getAbsolutePath()), "video/mp4"));
+
+                return params;
+            }
+        };
+
+        VolleySingleton.getInstance(getBaseContext()).addToRequestQueue(multipartRequest);
     }
 
-    private File CreateDirectory(String path){
-        String filePath = Environment.getExternalStorageDirectory() + "/" + path;
+    public String getStringImage(Bitmap bmp) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return encodedImage;
+
+    }
+
+
+    private File CreateDirectory(String path) {
+        String filePath = Environment.getExternalStorageDirectory() + "/Geziyorum/" + path;
         File mediaDirectory = Environment.getExternalStoragePublicDirectory(filePath);
-        if(!mediaDirectory.exists()){
-            if(!mediaDirectory.mkdirs()){
+        if (!mediaDirectory.exists()) {
+            if (!mediaDirectory.mkdirs()) {
                 System.out.println("cannot create dir");
             }
         }
 
         return mediaDirectory;
+    }
+/*
+    private String getVideoName(){
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_ssmmHH").format(new Date(Calendar.getInstance().getTime().getTime()));
+        String fileName = LOCATION_ID + "_" + timeStamp + ".mp4";
+        return fileName;
     }
 
     private String getPictureName(){
@@ -203,8 +308,11 @@ public class TestActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PHOTO_CAPTURE && resultCode == RESULT_OK) {
+        if (requestCode == Constants.PHOTO_CAPTURE && resultCode == RESULT_OK) {
             localDbHelper.insertMedia(photo);
+        }
+        if (requestCode == Constants.VIDEO_CAPTURE && resultCode == RESULT_OK) {
+            localDbHelper.insertMedia(video);
         }
     }
 
@@ -295,5 +403,5 @@ public class TestActivity extends AppCompatActivity {
         return false;
     }
 
-
+*/
 }

@@ -1,6 +1,7 @@
 package com.example.recluse.geziyorum;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,21 +9,31 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.recluse.geziyorum.db.Constants;
 import com.example.recluse.geziyorum.db.helper.LocalDbHelper;
 import com.example.recluse.geziyorum.models.LocationMediaModel;
 import com.example.recluse.geziyorum.models.LocationModel;
+import com.example.recluse.geziyorum.models.NoteModel;
 import com.example.recluse.geziyorum.models.TripModel;
+import com.example.recluse.geziyorum.utils.ExifUtil;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -48,12 +59,17 @@ public class TripDetailActivity extends AppCompatActivity implements OnMapReadyC
 
     private LocalDbHelper localDbHelper;
 
-    private ArrayList<LocationMediaModel> photos;
+    private ArrayList<LocationMediaModel> photos,videos,notes;
+    private ArrayList<LocationModel> locationModels;
+
+    private Context context;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        context=this;
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
 
@@ -61,6 +77,7 @@ public class TripDetailActivity extends AppCompatActivity implements OnMapReadyC
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.tripDetailMap);
+
 
         mapFragment.getMapAsync(this);
 
@@ -95,7 +112,7 @@ public class TripDetailActivity extends AppCompatActivity implements OnMapReadyC
         }
         mMap.setMyLocationEnabled(true);
 
-        ArrayList<LocationModel> locationModels = localDbHelper.GetLocations(trip.getId());
+        locationModels = localDbHelper.GetLocations(trip.getId());
         PrintLinesToMap(locationModels);
         AddMarkersWithMedia();
 
@@ -106,45 +123,80 @@ public class TripDetailActivity extends AppCompatActivity implements OnMapReadyC
                     return null;
                 }
 
+
+
                 @Override
                 public View getInfoContents(Marker marker) {
                     View view = getLayoutInflater().inflate(R.layout.marker_info_window,null);
-                    LocationMediaModel tmpPhoto = (LocationMediaModel) marker.getTag();
-                    String filePath = Constants.STORAGE_PATH + Environment.getExternalStorageDirectory() + "/Geziyorum/" + tmpPhoto.getPath();
-                    File imageFile = new File(filePath,tmpPhoto.getFile_name());
-                    ImageView imageView = view.findViewById(R.id.infoImageView);
 
-                    if(imageFile.exists()){
-                        Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-                        imageView.setImageBitmap(bitmap);
+                    LocationMediaModel model = (LocationMediaModel) marker.getTag();
+                    if(model.getFile_name() != "note"){
+                        ImageView imageView = view.findViewById(R.id.infoImageView);
+                        String filePath = Constants.STORAGE_PATH + Environment.getExternalStorageDirectory() + "/Geziyorum/" + model.getPath();
+                        TextView textView = view.findViewById(R.id.infoTextView);
+                        textView.setText("");
+                        if(model.getFile_name().endsWith(".jpg")){
+                            File imageFile = new File(filePath,model.getFile_name());
+
+                            if(imageFile.exists()){
+                                Bitmap bitmap = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(),BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
+                                imageView.setImageBitmap(bitmap);
+                            }
+                        }else if(model.getFile_name().endsWith(".mp4")){
+                            File videoFile = new File(filePath,model.getFile_name());
+
+                            if(videoFile.exists()){
+                                Bitmap bmThumbnail = ThumbnailUtils.createVideoThumbnail(videoFile.getAbsolutePath(), MediaStore.Video.Thumbnails.MICRO_KIND);
+                                imageView.setImageBitmap(bmThumbnail);
+                            }
+                        }
                     }
-
-
-                    view.setOnClickListener(view1 -> {
-
-                    });
                     return view;
                 }
+            });
+
+            mMap.setOnInfoWindowClickListener(marker -> {
+                LocationMediaModel model = (LocationMediaModel) marker.getTag();
+                String path = Constants.STORAGE_PATH + Environment.getExternalStorageDirectory() + "/Geziyorum/" + model.getPath();
+                String fileName = model.getFile_name();
+
+                if(fileName.endsWith(".jpg")){
+                    File imageFile = new File(path,model.getFile_name());
+                    if(imageFile.exists()){
+                        Bitmap bitmap = ExifUtil.rotateBitmap(imageFile.getAbsolutePath(),BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
+                        ImageView imageView = new ImageView(context);
+                        PhotoView photoView = new PhotoView(context);
+                        photoView.setImageBitmap(bitmap);
+                        imageView.setImageBitmap(bitmap);
+                        new AlertDialog.Builder(context)
+                                .setView(photoView)
+                                .setNegativeButton("Close", (dialog, whichButton) -> {
+
+                                })
+                                .show();
+
+                    }
+                }else if(fileName.endsWith(".mp4")){
+
+                }else if(model.getFile_name() == "note"){
+
+                        new AlertDialog.Builder(context)
+                                .setTitle("Your Note")
+                                .setMessage(model.getPath())
+                                .setNegativeButton("Close", (dialog, whichButton) -> {
+
+                                })
+                                .show();
+                }
+
             });
         }
 
 
     }
 
-    private Location LocationModelToLocation(LocationModel locationModel){
-        Location location = new Location("Last Location");
-        location.setLongitude(locationModel.getLongitude());
-        location.setLatitude(locationModel.getLatitude());
-        return location;
-    }
 
-    private ArrayList<Location> GetLocationsList(ArrayList<LocationModel> locationModels){
-        ArrayList<Location> locations = new ArrayList<>();
-        for(LocationModel locationModel : locationModels){
-            locations.add(LocationModelToLocation(locationModel));
-        }
-        return locations;
-    }
+
 
     private void PrintLinesToMap(ArrayList<LocationModel> locations){
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(locations.get(0).getLatitude(), locations.get(0).getLongitude()), 13));
@@ -153,7 +205,7 @@ public class TripDetailActivity extends AppCompatActivity implements OnMapReadyC
             LatLng src = new LatLng(locations.get(i-1).getLatitude(),locations.get(i-1).getLongitude());
             LatLng dst = new LatLng(locations.get(i).getLatitude(),locations.get(i).getLongitude());
 
-            Polyline polyline = mMap.addPolyline(new PolylineOptions().add(src,dst).width(3).color(Color.RED).geodesic(true));
+            mMap.addPolyline(new PolylineOptions().add(src,dst).width(3).color(Color.RED).geodesic(true));
         }
     }
 
@@ -168,6 +220,35 @@ public class TripDetailActivity extends AppCompatActivity implements OnMapReadyC
             Marker photoMarker = mMap.addMarker(options);
             photoMarker.setTag(photo);
         }
+
+        videos = localDbHelper.GetVideos(trip.getId());
+
+        for(LocationMediaModel video : videos){
+            LatLng src = new LatLng(video.getLatitude(),video.getLongitude());
+            Drawable markerDrawable = getResources().getDrawable(R.drawable.ic_video_for_marker);
+            BitmapDescriptor markerIcon = getMarkerIconFromDrawable(markerDrawable);
+            MarkerOptions options = new MarkerOptions().position(src).draggable(false).icon(markerIcon);
+            Marker photoMarker = mMap.addMarker(options);
+            photoMarker.setTag(video);
+        }
+
+        notes = new ArrayList<>();
+        for(LocationModel location : locationModels){
+            ArrayList<NoteModel> noteModels = localDbHelper.GetNotes(location.getId());
+            for(NoteModel noteModel : noteModels){
+                notes.add(new LocationMediaModel(location.getId(),location.getTrip_id(),noteModel.getId(),location.getLongitude(),location.getLatitude(),noteModel.getNote(),"note"));
+            }
+        }
+
+        for(LocationMediaModel note : notes){
+            LatLng src = new LatLng(note.getLatitude(),note.getLongitude());
+            Drawable markerDrawable = getResources().getDrawable(R.drawable.ic_note_for_marker);
+            BitmapDescriptor markerIcon = getMarkerIconFromDrawable(markerDrawable);
+            MarkerOptions options = new MarkerOptions().position(src).draggable(false).icon(markerIcon);
+            Marker photoMarker = mMap.addMarker(options);
+            photoMarker.setTag(note);
+        }
+
     }
 
     private BitmapDescriptor getMarkerIconFromDrawable(Drawable drawable) {

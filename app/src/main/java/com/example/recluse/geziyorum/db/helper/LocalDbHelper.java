@@ -153,7 +153,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
 
     //region Insert Functions
 
-    public boolean insertUser(UserModel user){
+    public long insertUser(UserModel user){
 
         String birth_date = sdf.format(user.getBirthdate());
         String created_date = sdf.format(user.getCreated_at());
@@ -173,13 +173,8 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         values.put("created_at", created_date);
 
         long insertedId = this.writableDb.insert(USER_TABLE, null, values);
-        Log.d("inserted user id", Long.toString(insertedId));
 
-        if(insertedId == -1){
-            return false;
-        }else{
-            return true;
-        }
+        return insertedId;
     }
 
     public long insertTrip(TripModel trip){
@@ -265,7 +260,7 @@ public class LocalDbHelper extends SQLiteOpenHelper {
 
     //region Update Functions
 
-    public boolean updateUser(UserModel user) {
+    public long updateUser(UserModel user) {
 
         String birth_date = sdf.format(user.getBirthdate());
         String created_date = sdf.format(user.getCreated_at());
@@ -284,13 +279,10 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         values.put("birthdate", birth_date);
         values.put("created_at", created_date);
 
-        long insertedId = this.writableDb.update(USER_TABLE, values, "user_id = ?", new String[]{Integer.toString(user.getId())});
+        long insertedId = this.writableDb.update(USER_TABLE, values, "id = ?", new String[]{Integer.toString(user.getId())});
 
-        if (insertedId == 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return insertedId;
+
     }
 
     public boolean updateTrip(TripModel trip){
@@ -522,6 +514,24 @@ public class LocalDbHelper extends SQLiteOpenHelper {
         return photos;
     }
 
+    public ArrayList<LocationMediaModel> GetVideos(int trip_id){
+        ArrayList<LocationMediaModel> videos = new ArrayList<>();
+
+        String query = "SELECT l.id, m.id, l.longitude, l.latitude, m.path, m.file_name" +
+                " FROM " + LOCATION_TABLE + " as l, " + MEDIA_TABLE + " as m WHERE l.id = m.location_id AND l.trip_id = ? AND m.media_type = ?;";
+        Cursor cursor = this.readableDb.rawQuery(query,new String[]{Integer.toString(trip_id), Constants.MEDIA_TYPE_VIDEO});
+
+        LocationMediaModel locationMediaModel;
+        while(cursor.moveToNext()){
+            locationMediaModel = new LocationMediaModel(cursor.getInt(0),trip_id,cursor.getInt(1),
+                    cursor.getDouble(2),cursor.getDouble(3),cursor.getString(4),cursor.getString(5));
+            videos.add(locationMediaModel);
+        }
+
+        return videos;
+    }
+
+
     //endregion
 
     //region Check User Pass
@@ -576,6 +586,8 @@ public class LocalDbHelper extends SQLiteOpenHelper {
 
         return new TripModel(0,"","");
     }
+
+
 
 
 
